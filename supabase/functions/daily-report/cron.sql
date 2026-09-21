@@ -13,7 +13,7 @@ select cron.schedule(
   '0 18 * * *',
   $$
   select net.http_post(
-    url := 'https://YOUR-PROJECT-REF.supabase.co/functions/v1/daily-report',
+     url := 'https://ooajzhvfrxnladbxrwht.supabase.co/functions/v1/daily-report',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer YOUR-SERVICE-ROLE-KEY'
