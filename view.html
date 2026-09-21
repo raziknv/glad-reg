@@ -120,7 +120,7 @@
   }
 
   async function loadRegistrations(){
-    const code = codeInput.value.trim();
+    const code = codeInput.value.trim().toUpperCase();
     msg.className = "msg";
     summary.className = "summary hidden";
     tableWrap.className = "table-wrap hidden";
