@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLAD — Design Your Report | Register</title>
+<meta name="description" content="Register for GLAD's 5-Day Free Online Training: Design Your Report.">
+
+<!-- Supabase client (loaded from GitHub Pages, no build step needed) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="oman-data.js"></script>
+
+<style>
+  :root{
+    --plum-950:#1c0a24;
+    --plum-900:#2c0f38;
+    --plum-800:#3d1550;
+    --magenta-600:#a21caf;
+    --magenta-500:#c026d3;
+    --magenta-100:#f5d9f7;
+    --paper:#fdfaff;
+    --ink:#241129;
+    --ink-soft:#5c4a66;
+    --line:#e4d6ea;
+    --ok:#1f7a4d;
+    --err:#b8213d;
+    --radius:10px;
+    --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#150a1a; --ink:#f2e9f5; --ink-soft:#c7b3d1; --line:#3d2a48;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#150a1a; --ink:#f2e9f5; --ink-soft:#c7b3d1; --line:#3d2a48;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    line-height:1.5;
+  }
+  .hero{
+    background:linear-gradient(160deg,var(--plum-950),var(--plum-800) 65%,var(--magenta-600));
+    padding:0 0 28px;
+  }
+  .hero img{
+    display:block;
+    width:100%;
+    max-width:640px;
+    margin:0 auto;
+    height:auto;
+  }
+  .hero-text{
+    max-width:560px;
+    margin:0 auto;
+    padding:20px 24px 0;
+    text-align:center;
+    color:#fdf4ff;
+  }
+  .hero-text h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(1.4rem,4vw,1.9rem);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .hero-text p{
+    margin:0;
+    color:var(--magenta-100);
+    font-size:0.95rem;
+  }
+
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:32px 24px 64px;
+  }
+
+  form{display:flex; flex-direction:column; gap:20px;}
+
+  .field{display:flex; flex-direction:column; gap:6px;}
+  label{
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .hint{font-size:0.78rem; color:var(--ink-soft); margin-top:-2px;}
+
+  input[type=text], input[type=tel], select{
+    font:inherit;
+    font-size:1rem;
+    padding:11px 13px;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper);
+    color:var(--ink);
+    width:100%;
+  }
+  input:focus, select:focus{
+    outline:2px solid var(--magenta-500);
+    outline-offset:1px;
+    border-color:var(--magenta-500);
+  }
+  select:disabled, input:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+  }
+
+  .checkbox-row{
+    display:flex; align-items:center; gap:8px;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+  }
+  .checkbox-row input{width:16px; height:16px;}
+
+  button[type=submit]{
+    font:inherit;
+    font-weight:700;
+    font-size:1rem;
+    padding:14px 18px;
+    border:none;
+    border-radius:999px;
+    background:linear-gradient(120deg,var(--magenta-600),var(--magenta-500));
+    color:#fff;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  button[type=submit]:disabled{opacity:0.6; cursor:wait;}
+  button[type=submit]:focus-visible{outline:2px solid var(--plum-900); outline-offset:2px;}
+
+  .status{
+    border-radius:var(--radius);
+    padding:14px 16px;
+    font-size:0.92rem;
+    display:none;
+  }
+  .status.show{display:block;}
+  .status.ok{background:#e5f6ec; color:var(--ok); border:1px solid #b8e2c9;}
+  .status.err{background:#fbe6ea; color:var(--err); border:1px solid #f0bcc7;}
+
+  .field-error{color:var(--err); font-size:0.78rem; display:none;}
+  .field.invalid input, .field.invalid select{border-color:var(--err);}
+  .field.invalid .field-error{display:block;}
+
+  footer{
+    text-align:center;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    padding:0 24px 32px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="assets/poster.jpg" alt="GLAD — Design Your Report, 5-Day Free Online Training">
+  <div class="hero-text">
+    <h1>Register for the 5-Day Training</h1>
+    <p>Canva &amp; AI for professional slide design and effective presentation techniques. 1.5 hours/day, 5 days.</p>
+  </div>
+</div>
+
+<main>
+  <form id="reg-form" novalidate>
+
+    <div class="field" data-field="name">
+      <label for="name">Full name</label>
+      <input type="text" id="name" name="name" autocomplete="name" required>
+      <span class="field-error">Please enter your name.</span>
+    </div>
+
+    <div class="field" data-field="mobile">
+      <label for="mobile">Mobile number</label>
+      <input type="tel" id="mobile" name="mobile" inputmode="tel" placeholder="e.g. 9XXXXXXX" autocomplete="tel" required>
+      <span class="field-error">Please enter a valid mobile number.</span>
+    </div>
+
+    <div class="field" data-field="whatsapp">
+      <label for="whatsapp">WhatsApp number</label>
+      <input type="tel" id="whatsapp" name="whatsapp" inputmode="tel" placeholder="e.g. 9XXXXXXX" required>
+      <div class="checkbox-row">
+        <input type="checkbox" id="same-as-mobile">
+        <label for="same-as-mobile" style="font-weight:400;">Same as mobile number</label>
+      </div>
+      <span class="field-error">Please enter a valid WhatsApp number.</span>
+    </div>
+
+    <div class="field" data-field="region">
+      <label for="region">Region</label>
+      <select id="region" required>
+        <option value="" disabled selected>Select region</option>
+      </select>
+      <span class="field-error">Please select your region.</span>
+    </div>
+
+    <div class="field" data-field="wilayat">
+      <label for="wilayat">Wilayat</label>
+      <select id="wilayat" required disabled>
+        <option value="" disabled selected>Select region first</option>
+      </select>
+      <span class="field-error">Please select your wilayat.</span>
+    </div>
+
+    <div class="field" data-field="village">
+      <label for="village">Village</label>
+      <select id="village" required disabled>
+        <option value="" disabled selected>Select wilayat first</option>
+      </select>
+      <span class="hint" id="village-hint" style="display:none;">Type your village name below.</span>
+      <input type="text" id="village-other" placeholder="Enter village name" style="display:none; margin-top:6px;">
+      <span class="field-error">Please enter your village.</span>
+    </div>
+
+    <button type="submit" id="submit-btn">Register</button>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </form>
+</main>
+
+<footer>Global Learning and Development — GLAD</footer>
+
+<script>
+(function(){
+  // ---- CONFIGURE THESE TWO VALUES for your Supabase project ----
+  // Project Settings -> API in your Supabase dashboard. The anon key is safe
+  // to expose in client-side code as long as Row Level Security is enabled
+  // (see schema.sql) so it can only INSERT, never read other people's rows.
+  const SUPABASE_URL = "https://ooajzhvfrxnladbxrwht.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYWp6aHZmcnhubGFkYnhyd2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODQxNDYsImV4cCI6MjEwNTU2MDE0Nn0.wR2zWRoOJf4bSsPJT8dp4xP4WTtfIV5jMQiFJ-NQFsY";
+  // ----------------------------------------------------------------
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById("reg-form");
+  const regionSel = document.getElementById("region");
+  const wilayatSel = document.getElementById("wilayat");
+  const villageSel = document.getElementById("village");
+  const villageOther = document.getElementById("village-other");
+  const villageHint = document.getElementById("village-hint");
+  const statusBox = document.getElementById("status");
+  const submitBtn = document.getElementById("submit-btn");
+  const mobile = document.getElementById("mobile");
+  const whatsapp = document.getElementById("whatsapp");
+  const sameAsMobile = document.getElementById("same-as-mobile");
+
+  // ---- Populate Region dropdown ----
+  Object.keys(OMAN_DATA).forEach(function(region){
+    const opt = document.createElement("option");
+    opt.value = region;
+    opt.textContent = region;
+    regionSel.appendChild(opt);
+  });
+
+  regionSel.addEventListener("change", function(){
+    const region = OMAN_DATA[regionSel.value];
+    wilayatSel.innerHTML = '<option value="" disabled selected>Select wilayat</option>';
+    villageSel.innerHTML = '<option value="" disabled selected>Select wilayat first</option>';
+    villageSel.disabled = true;
+    villageOther.style.display = "none";
+    villageHint.style.display = "none";
+    if (!region) { wilayatSel.disabled = true; return; }
+    Object.keys(region.wilayats).forEach(function(w){
+      const opt = document.createElement("option");
+      opt.value = w; opt.textContent = w;
+      wilayatSel.appendChild(opt);
+    });
+    wilayatSel.disabled = false;
+  });
+
+  wilayatSel.addEventListener("change", function(){
+    const region = OMAN_DATA[regionSel.value];
+    const villages = (region && region.wilayats[wilayatSel.value]) || [];
+    villageSel.innerHTML = '<option value="" disabled selected>Select village</option>';
+    villages.forEach(function(v){
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = v;
+      villageSel.appendChild(opt);
+    });
+    const otherOpt = document.createElement("option");
+    otherOpt.value = "__other__";
+    otherOpt.textContent = "Other / not listed";
+    villageSel.appendChild(otherOpt);
+    villageSel.disabled = false;
+    villageOther.style.display = "none";
+    villageHint.style.display = "none";
+    villageOther.required = false;
+  });
+
+  villageSel.addEventListener("change", function(){
+    if (villageSel.value === "__other__") {
+      villageOther.style.display = "block";
+      villageHint.style.display = "block";
+      villageOther.required = true;
+      villageOther.focus();
+    } else {
+      villageOther.style.display = "none";
+      villageHint.style.display = "none";
+      villageOther.required = false;
+    }
+  });
+
+  sameAsMobile.addEventListener("change", function(){
+    if (sameAsMobile.checked) {
+      whatsapp.value = mobile.value;
+      whatsapp.disabled = true;
+    } else {
+      whatsapp.disabled = false;
+    }
+  });
+  mobile.addEventListener("input", function(){
+    if (sameAsMobile.checked) whatsapp.value = mobile.value;
+  });
+
+  function omanPhoneValid(v){
+    return /^[79]\d{7}$/.test((v || "").replace(/\s|-/g, ""));
+  }
+
+  function setInvalid(fieldName, invalid){
+    const el = form.querySelector('[data-field="' + fieldName + '"]');
+    el.classList.toggle("invalid", invalid);
+  }
+
+  function validate(){
+    let ok = true;
+    const name = document.getElementById("name").value.trim();
+    if (!name) { setInvalid("name", true); ok = false; } else setInvalid("name", false);
+
+    if (!omanPhoneValid(mobile.value)) { setInvalid("mobile", true); ok = false; } else setInvalid("mobile", false);
+
+    const waVal = sameAsMobile.checked ? mobile.value : whatsapp.value;
+    if (!omanPhoneValid(waVal)) { setInvalid("whatsapp", true); ok = false; } else setInvalid("whatsapp", false);
+
+    if (!regionSel.value) { setInvalid("region", true); ok = false; } else setInvalid("region", false);
+    if (!wilayatSel.value) { setInvalid("wilayat", true); ok = false; } else setInvalid("wilayat", false);
+
+    const villageVal = villageSel.value === "__other__" ? villageOther.value.trim() : villageSel.value;
+    if (!villageVal) { setInvalid("village", true); ok = false; } else setInvalid("village", false);
+
+    return ok;
+  }
+
+  function showStatus(kind, message){
+    statusBox.className = "status show " + kind;
+    statusBox.textContent = message;
+  }
+
+  form.addEventListener("submit", async function(e){
+    e.preventDefault();
+    statusBox.className = "status";
+    if (!validate()) {
+      showStatus("err", "Please fix the highlighted fields above.");
+      return;
+    }
+
+    const villageVal = villageSel.value === "__other__" ? villageOther.value.trim() : villageSel.value;
+    const waVal = sameAsMobile.checked ? mobile.value : whatsapp.value;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Registering…";
+
+    const { error } = await sb.from("registrations").insert({
+      name: document.getElementById("name").value.trim(),
+      mobile_no: mobile.value.trim(),
+      whatsapp_no: waVal.trim(),
+      region: regionSel.value,
+      wilayat: wilayatSel.value,
+      village: villageVal,
+      village_is_other: villageSel.value === "__other__"
+    });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Register";
+
+    if (error) {
+      console.error(error);
+      showStatus("err", "Something went wrong submitting your registration. Please try again in a moment.");
+      return;
+    }
+
+    showStatus("ok", "You're registered! We'll see you at the training. ✅");
+    form.reset();
+    wilayatSel.innerHTML = '<option value="" disabled selected>Select region first</option>';
+    wilayatSel.disabled = true;
+    villageSel.innerHTML = '<option value="" disabled selected>Select wilayat first</option>';
+    villageSel.disabled = true;
+    villageOther.style.display = "none";
+    villageHint.style.display = "none";
+    whatsapp.disabled = false;
+  });
+})();
+</script>
+</body>
+</html>
