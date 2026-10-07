@@ -6,6 +6,7 @@
 <title>GLAD — View Registrations</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
   :root{
@@ -17,8 +18,10 @@
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){ --paper:#150a1a; --ink:#f2e9f5; --ink-soft:#c7b3d1; --line:#3d2a48; }
+    :root:not([data-theme="light"]) .stat-total{ color:var(--magenta-100); }
   }
   :root[data-theme="dark"]{ --paper:#150a1a; --ink:#f2e9f5; --ink-soft:#c7b3d1; --line:#3d2a48; }
+  :root[data-theme="dark"] .stat-total{ color:var(--magenta-100); }
   *{box-sizing:border-box;}
   body{
     margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body);
@@ -53,6 +56,20 @@
 
   .summary{ font-size:0.9rem; color:var(--ink-soft); margin-bottom:14px; }
 
+  .stat-row{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+  .stat-total{ font-size:1.5rem; font-weight:700; color:var(--plum-950); }
+  .stat-total span{ font-size:0.85rem; font-weight:500; color:var(--ink-soft); display:block; }
+
+  .export-btn{
+    font:inherit; font-weight:700; font-size:0.85rem; padding:9px 16px; border:1.5px solid var(--magenta-600);
+    border-radius:999px; background:transparent; color:var(--magenta-600); cursor:pointer;
+  }
+  .export-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .region-breakdown{ margin-bottom:18px; }
+  .region-breakdown table{ font-size:0.85rem; min-width:0; width:auto; }
+  .region-breakdown th, .region-breakdown td{ white-space:normal; }
+
   .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius); }
   table{ width:100%; border-collapse:collapse; font-size:0.88rem; min-width:640px; }
   th, td{ text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
@@ -76,7 +93,20 @@
   </div>
 
   <div class="msg err" id="msg"></div>
-  <div class="summary hidden" id="summary"></div>
+
+  <div class="stat-row hidden" id="stat-row">
+    <div class="stat-total" id="stat-total"></div>
+    <button class="export-btn" id="export-btn" disabled>Export to Excel</button>
+  </div>
+
+  <div class="region-breakdown hidden" id="region-breakdown">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Region</th><th>Registrations</th></tr></thead>
+        <tbody id="region-breakdown-rows"></tbody>
+      </table>
+    </div>
+  </div>
 
   <div class="table-wrap hidden" id="table-wrap">
     <table>
@@ -93,17 +123,23 @@
 <script>
 (function(){
   // Same project as index.html — set these to match.
-  const SUPABASE_URL = "https://ooajzhvfrxnladbxrwht.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYWp6aHZmcnhubGFkYnhyd2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODQxNDYsImV4cCI6MjEwNTU2MDE0Nn0.wR2zWRoOJf4bSsPJT8dp4xP4WTtfIV5jMQiFJ-NQFsY";
+  const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const codeInput = document.getElementById("code");
   const loadBtn = document.getElementById("load-btn");
   const msg = document.getElementById("msg");
-  const summary = document.getElementById("summary");
+  const statRow = document.getElementById("stat-row");
+  const statTotal = document.getElementById("stat-total");
+  const exportBtn = document.getElementById("export-btn");
+  const regionBreakdown = document.getElementById("region-breakdown");
+  const regionBreakdownRows = document.getElementById("region-breakdown-rows");
   const tableWrap = document.getElementById("table-wrap");
   const rowsBody = document.getElementById("rows");
+
+  let currentRows = [];   // holds the last-loaded rows, used by Export
 
   function esc(s){
     const d = document.createElement("div");
@@ -122,9 +158,13 @@
   async function loadRegistrations(){
     const code = codeInput.value.trim().toUpperCase();
     msg.className = "msg";
-    summary.className = "summary hidden";
+    statRow.className = "stat-row hidden";
+    regionBreakdown.className = "region-breakdown hidden";
     tableWrap.className = "table-wrap hidden";
     rowsBody.innerHTML = "";
+    regionBreakdownRows.innerHTML = "";
+    exportBtn.disabled = true;
+    currentRows = [];
 
     if (!code) {
       msg.className = "msg err show";
@@ -147,10 +187,28 @@
     }
 
     const rows = data || [];
-    summary.className = "summary";
-    summary.textContent = rows.length + " registration(s) found.";
+    currentRows = rows;
+
+    statRow.className = "stat-row";
+    statTotal.innerHTML = rows.length + "<span>Total registrations</span>";
 
     if (rows.length === 0) return;
+
+    exportBtn.disabled = false;
+
+    // Region breakdown only makes sense when more than one region shows up
+    // (i.e. the global/Oman in-charge code) — a region-scoped code only ever
+    // has one region, so the breakdown would just repeat the total.
+    const counts = {};
+    rows.forEach(function(r){ counts[r.region] = (counts[r.region] || 0) + 1; });
+    const regionNames = Object.keys(counts);
+    if (regionNames.length > 1) {
+      regionNames.sort(function(a, b){ return counts[b] - counts[a]; });
+      regionBreakdownRows.innerHTML = regionNames.map(function(name){
+        return "<tr><td>" + esc(name) + "</td><td>" + counts[name] + "</td></tr>";
+      }).join("");
+      regionBreakdown.className = "region-breakdown";
+    }
 
     tableWrap.className = "table-wrap";
     rowsBody.innerHTML = rows.map(function(r){
@@ -166,7 +224,33 @@
     }).join("");
   }
 
+  function exportToExcel(){
+    if (!currentRows.length) return;
+
+    const sheetData = currentRows.map(function(r){
+      return {
+        "Name": r.name,
+        "Mobile No": r.mobile_no,
+        "WhatsApp No": r.whatsapp_no,
+        "Region": r.region,
+        "Wilayat": r.wilayat,
+        "Village": r.village,
+        "Registered On": fmtDate(r.created_at)
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(sheetData);
+    ws["!cols"] = [{ wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+
+    const today = new Date().toISOString().slice(0, 10);
+    const scopeLabel = (codeInput.value.trim() || "registrations").toUpperCase();
+    XLSX.writeFile(wb, "glad-registrations-" + scopeLabel + "-" + today + ".xlsx");
+  }
+
   loadBtn.addEventListener("click", loadRegistrations);
+  exportBtn.addEventListener("click", exportToExcel);
   codeInput.addEventListener("keydown", function(e){
     if (e.key === "Enter") loadRegistrations();
   });
