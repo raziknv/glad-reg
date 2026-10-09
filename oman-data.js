@@ -26,7 +26,7 @@ const OMAN_DATA = {
       "Muscat": [],
       "Muttrah": [],
       "Bawshar": ["Al Khuwair", "Madinat As Sultan Qaboos", "Al Ghubrah", "Azaiba"],
-      "A'Seeb": ["Al Khoudh", "Al Mabaila", "Al Maabilah", "Amerat Al Seeb"],
+      "A'Seeb": ["Al Khoudh", "Al Mabaila", "Al Mawaleh", "Amerat Al Seeb"],
       "Al Amarat": [],
       "Qurayyat": []
     }
